@@ -1,7 +1,7 @@
 """
-projectile.py
+projectile_newtonian.py
 
-Created on Sun Oct 1 20:59:46 2023
+Created on Mon Oct 2 11:42:21 2023
 
 Edited by Mark Graham
 
@@ -16,8 +16,33 @@ import scipy.integrate as sci       ### integration toolbox
 
 ### Defining Constant Parameters
 
+## Gravitational Constant
+G = 6.6742*10**-11
+
+## Planet Constants
+# Earth
+Rplanet = 6357000.0                 ### meters
+mplanet = 5.972e24                  ### kilograms
+
+#Kerbin
+RKerbin = 600000                    ### meters
+mkerbin = 5.2915158*10**22          ### kilograms
+
 ## Rocket (hobby rocket scale)
 mass = 640.0/1000.0 #kgs
+
+## Gravitational Acceleration
+def gravity(z):
+    global Rplanet, mplanet
+
+    r = np.sqrt(z**2)
+
+    if r < Rplanet:
+            accel = 0.0
+    else:
+        accel = G*mplanet / (r**3)*r
+    
+    return accel
 
 ### Equations of motion:
 ## Force = mass * acceleration = mass * zddot
@@ -37,15 +62,15 @@ def Derivatives(state, t):
 
     ### Total Forces:
     ## Gravity
-    gravity = -9.81*mass
+    gravityF = -gravity(z)*mass
 
     ## Aerodynamics
-    aero = 0.0
+    aeroF = 0.0
 
     ## Thrust
-    thrust = 0.0
+    thrustF = 0.0
 
-    Forces = gravity + aero + thrust
+    Forces = gravityF + aeroF + thrustF
 
     # Compute zddot
     zddot = Forces/mass
@@ -58,37 +83,37 @@ def Derivatives(state, t):
 
 ##### Main Script Below #####
 
+### Test Surface Gravity
+print(f'Surface Gravity (m/s^2) = {gravity(Rplanet)}')
+
 ### Initial Conditions:
-z0 = 0.0                            ### meters
-velz0 = 164.0                        ### meters / second
+z0 = Rplanet                         ### meters
+velz0 = 25*331.0                     ### meters / second
 stateinitial = np.asarray([z0, velz0])
 
 
 ## Time window 
 # Over 30 secs, give 1000 data points
-tout = np.linspace(0, 35, 1000)
+tout = np.linspace(0, 340, 1000)
 
 ### Numerical Integration Call
 stateout = sci.odeint(Derivatives, stateinitial, tout)
 
 ### Rename Variables
 zout = stateout[:,0]
+altitude = zout - Rplanet
 velzout = stateout[:,1]
 
 ### Plot
-
-# %%
 ### Altitude 
-mpl.plot(tout, zout)
+mpl.plot(tout, altitude)
 mpl.xlabel('Time (seconds [sec])')
 mpl.ylabel('Altitude (meters [m])')
 mpl.grid()
-# %%
+
 ### Velocity
 mpl.figure()
 mpl.plot(tout, velzout)
 mpl.xlabel('Time (seconds [sec])')
 mpl.ylabel('Normal Speed (meters per second [m/s])')
 mpl.grid()
-
-# %%

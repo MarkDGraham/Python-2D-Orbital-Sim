@@ -22,3 +22,6 @@ display the plots. To run them, click "Run Cell" right above "# %%".
 3) Run python code: <br/>
 - Windows: "(py or python) projectile.py" <br/>
 - Mac: "python projectile.py" <br/>
+4) Run Newtonian Calculations:
+- Windows: "(py or python) projectile_newtonian.py" <br/>
+- Mac: "python projectile_newtonian.py"
