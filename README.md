@@ -5,8 +5,14 @@ Simulation of a projectile on a Flat Earth written in Python.
 ## Viewing Graphs and Plots
 &emsp; To view graphs and plots specifically using VS Code, the "# %%" <br/>
 in the code allows for VS Code to use the Jypter Notebook extension to <br/>
-display the plots. To run them, click "Run Cell" right above "# %%". 
-<br/> <br/>
+display the plots. To run them, click "Run Cell" right above "# %%". <br/>
+<br/>
+
+## Saving Graphs
+ &emsp; To save the graphs for viewing, remove '#' character on code <br/>
+ that contains "mpl.savefig(..." This will save the graphs/plots  <br/>
+ to graph representation. <br/>
+ <br/>
 
 ## Packages:
 "numpy" is the numerical library allowing for numerical conversions. <br/>
@@ -34,3 +40,6 @@ display the plots. To run them, click "Run Cell" right above "# %%".
 7) Run Second Stage Rocket Model (for Kerbin): <br/>
 - Windows: "(py or python) second_stage_rocket.py" <br/>
 - Mac: "python second_stage_rocket.py" <br/>
+8) Run Aerodynamic 2 Stage Rocket (for Kerbin): <br/>
+- Windows: "(py or python) aerodynamic_2_stage.py" <br/>
+- Mac: "python aerodynamic_2_stage.py" <br/>
