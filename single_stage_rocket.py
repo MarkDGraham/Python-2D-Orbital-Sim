@@ -1,7 +1,7 @@
 """
-projectile_2D_newtonian.py
+single_stage_rocket.py
 
-Created on Mon Oct 2 14:35:21 2023
+Created on Mon Oct 3 19:56:32 2023
 
 Edited by Mark Graham
 
@@ -21,15 +21,26 @@ G = 6.6742*10**-11
 
 ## Planet Constants
 # Earth
-Rplanet = 6357000.0                 ### meters
-mplanet = 5.972e24                  ### kilograms
+#Rplanet = 6357000.0                 ### meters
+#mplanet = 5.972e24                  ### kilograms
 
 #Kerbin
-RKerbin = 600000                    ### meters
-mkerbin = 5.2915158*10**22          ### kilograms
+Rplanet = 600000                    ### meters
+mplanet = 5.2915158*10**22          ### kilograms
 
 ## Rocket (hobby rocket scale)
-mass = 640.0/1000.0 #kgs
+weighttons = 5.3                    ### tons
+mass0 = weighttons * 2000 / 2.2     ### kilograms
+max_thrust = 167970.0               ### Newtons
+Isp = 250.0                         ### seconds
+tMECO = 38.0                        ### seconds
+
+### Initial Conditions (Single Stage Rocket):
+x0 = Rplanet                        ### meters
+z0 = 0.0                            ### meters
+velz0 = 0.0                         ### meters / second
+velx0 = 0.0                         ### meters / second
+period = 500.0
 
 ## Gravitational Acceleration
 def gravity(x, z):
@@ -46,6 +57,25 @@ def gravity(x, z):
     
     return np.array([accelx, accelz])
 
+def propulsion(t):
+    global max_thrust, Isp, tMECO
+    if t < tMECO:
+        thrustF = max_thrust
+    else:
+        thrustF = 0.0
+
+    ### Angle of the thruster
+    theta = 10.0 * np.pi / 180.0
+
+    thrustx = thrustF * np.cos(theta)
+    thrustz = thrustF * np.sin(theta)
+
+    ### mdot
+    ve = Isp * 9.81                 ### meters / second
+    mdot = -thrustF/ve
+
+    return np.asarray([thrustx, thrustz]), mdot
+
 ### Equations of motion:
 ## Force = mass * acceleration = mass * zddot
 # z = altitude from the center of the planet along the north pole
@@ -57,12 +87,12 @@ def gravity(x, z):
 
 ## Second Order Differential Equation 
 def Derivatives(state, t):
-    global mass
     #state vector
     x = state[0]
     z = state[1]
     velx = state[2]
     velz = state[3]
+    mass = state[4]
 
     # Compute zdot
     zdot = velz
@@ -76,16 +106,20 @@ def Derivatives(state, t):
     aeroF = np.asarray([0.0, 0.0])
 
     ## Thrust
-    thrustF = np.asarray([0.0, 0.0])
+    thrustF, mdot = propulsion(t)
+         
 
     Forces = gravityF + aeroF + thrustF
 
-    # Compute zddot
-    ddot = Forces/mass
-
+    # Compute Acceleration
+    if mass > 0:
+        ddot = Forces/mass
+    else:
+        ddot = 0.0
+        mdot = 0.0 
 
     # Compute the statedot
-    statedot = np.asarray([xdot, zdot, ddot[0], ddot[1]])
+    statedot = np.asarray([xdot, zdot, ddot[0], ddot[1], mdot])
 
     return statedot
 
@@ -95,17 +129,21 @@ def Derivatives(state, t):
 ### Test Surface Gravity
 print(f'Surface Gravity (m/s^2) = {gravity(0, Rplanet)}')
 
-### Initial Conditions:
-x0 = Rplanet                        ### meters
+### Initial Conditions (Orbit):
+"""
+x0 = Rplanet + 600000               ### meters
 z0 = 0.0                            ### meters
 r0 = np.sqrt(x0**2 + z0**2)
 velz0 = np.sqrt(G*mplanet/r0) *1.1  ### meters / second
-velx0 = 100.0
-stateinitial = np.asarray([x0, z0, velx0, velz0])
+velx0 = 0.0                         ### meters / second
+"""
+
+### Setting the initial state
+stateinitial = np.asarray([x0, z0, velx0, velz0, mass0])
 
 
 ## Time window 
-period = 2*np.pi/np.sqrt(G*mplanet)*r0**(3.0/2.0) *1.5
+""" period = 2*np.pi/np.sqrt(G*mplanet)*r0**(3.0/2.0) *1.5 """
 # Over 30 secs, give 1000 data points
 tout = np.linspace(0, period, 1000)
 
@@ -119,6 +157,7 @@ altitude = np.sqrt(xout**2 + zout**2) - Rplanet
 velxout = stateout[:,2]
 velzout = stateout[:,3]
 velout = np.sqrt(velxout**2 + velzout**2)
+massout = stateout[:,4]
 
 ### Plot
 ### Altitude 
@@ -134,11 +173,18 @@ mpl.xlabel('Time (seconds [sec])')
 mpl.ylabel('Total Speed (meters per second [m/s])')
 mpl.grid()
 
+### Mass 
+mpl.figure()
+mpl.plot(tout, massout)
+mpl.xlabel('Time (seconds [sec])')
+mpl.ylabel('Mass (kilograms [kgs])')
+mpl.grid()
+
 ### 2D Orbit
 mpl.figure()
 mpl.plot(xout, zout, 'r-', label='Orbit')
 mpl.plot(xout[0], zout[0], 'g*')
-theta = np.linspace(0, 2 * np.pi, 100)
+theta = np.linspace(0, 2 * np.pi, 1000)
 xplanet = Rplanet*np.sin(theta)
 yplanet = Rplanet*np.cos(theta)
 mpl.plot(xplanet, yplanet, 'b-', label='Planet')

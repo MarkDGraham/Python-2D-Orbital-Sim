@@ -28,3 +28,6 @@ display the plots. To run them, click "Run Cell" right above "# %%".
 5) Run 2D Model: <br/>
 - Windows: "(py or python) projectile_2D_newtonian.py" <br/>
 - Mac: "python projectile_newtonian.py" <br/>
+6) Run Single STage Rocket Model: <br/>
+- Windows: "(py or python) single_stage_rocket.py" <br/>
+- Mac: "python single_stage_rocket.py" <br/>
